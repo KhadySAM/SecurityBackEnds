@@ -9,6 +9,7 @@ public interface AccountService {
     // Une méthode qui permet d'ajouter un User
     AppUser addNewUser(AppUser appUser);
 
+
     // Une méthode qui permet d'ajouter un Rôle;
     AppRole addNewRole (AppRole appRole);
 

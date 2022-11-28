@@ -13,17 +13,17 @@ import java.util.Collection;
 @NoArgsConstructor // un constructeur sans argument
 @AllArgsConstructor // un constructeur avec tous les arguments
 public class AppUser {
-    @Id // Identifier le Id;
-    @GeneratedValue (strategy = GenerationType.IDENTITY) // Identifier notre Primary Key
-    private Long id;
+  @Id // Identifier le Id;
+  @GeneratedValue (strategy = GenerationType.IDENTITY) // Identifier notre Primary Key
+  private Long id;
 
-    @Column(length = 50)
-    private String userName;
+  @Column(length = 50)
+  private String userName;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // Ignorer le password en Affichage
-    private String password;
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // Ignorer le password en Affichage
+  private String password;
 
-    @Column(length = 18)
-    @ManyToMany(fetch = FetchType.EAGER) // Pour afficher le user avec son Rôle;
-    private Collection<AppRole> appRoles = new ArrayList<>( );
+  @Column(length = 18)
+  @ManyToMany(fetch = FetchType.EAGER) // Pour afficher le user avec son Rôle;
+  private Collection<AppRole> appRoles = new ArrayList<>( );
 }

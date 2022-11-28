@@ -13,8 +13,8 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppRole {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String roleName;
+  @Id
+  @GeneratedValue (strategy = GenerationType.IDENTITY)
+  private Long id;
+  private String roleName;
 }

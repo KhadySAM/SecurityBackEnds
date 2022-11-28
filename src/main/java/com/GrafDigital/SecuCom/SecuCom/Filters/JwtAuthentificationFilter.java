@@ -27,43 +27,43 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 // cette classe va étendre de UsernamePasswordAuthenticationFilter;
 @AllArgsConstructor // pour injection authenticationManager
 public class JwtAuthentificationFilter extends UsernamePasswordAuthenticationFilter {
-    // cette Classe à besoin de authenticationManager pour fonctionner
-    private AuthenticationManager authenticationManager;
+  // cette Classe à besoin de authenticationManager pour fonctionner
+  private AuthenticationManager authenticationManager;
 
-    // Prémière méthode quand User essyae de se Loger
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        // On récupère le UserName et le Password
-        System.out.println("----------- attemptAuthentication ---------------");
-        String userName = request.getParameter("userName");
-        String password = request.getParameter("password");
-        System.out.println(userName);
-        System.out.println(password);
+  // Prémière méthode quand User essyae de se Loger
+  @Override
+  public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    // On récupère le UserName et le Password
+    System.out.println("----------- attemptAuthentication ---------------");
+    String userName = request.getParameter("userName");
+    String password = request.getParameter("password");
+    System.out.println(userName);
+    System.out.println(password);
 
-        // On stocke le userName et le password dans un Objet de Spring security;
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName, password);
+    // On stocke le userName et le password dans un Objet de Spring security;
+    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName, password);
 
-        return authenticationManager.authenticate(authenticationToken);
-    }
+    return authenticationManager.authenticate(authenticationToken);
+  }
 
-    // Deuxième méthode quand l'authentification a réussi
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        System.out.println("------------ successfulAuthentication -----------");
-        User user = (User) authResult.getPrincipal(); // permet de retourner le user authentifier;
-        // Générons le JWT
-        Algorithm algo1 = Algorithm.HMAC256("myScret2121".getBytes()); // Algorithm dencodage
-        String jwtAccessToken = JWT.create()
-                .withSubject(user.getUsername()) // userName
-                        .withExpiresAt(new Date(System.currentTimeMillis()+1*60*1000)) // delais token 10s
-                                .withIssuer(request.getRequestURL().toString()) // le nom de l'app qui a genérer le Token
-                .withClaim("roles",user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList())) // convertir la liste des Rôles en string
-                        .sign(algo1);
+  // Deuxième méthode quand l'authentification a réussi
+  @Override
+  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    System.out.println("------------ successfulAuthentication -----------");
+    User user = (User) authResult.getPrincipal(); // permet de retourner le user authentifier;
+    // Générons le JWT
+    Algorithm algo1 = Algorithm.HMAC256("myScret2121".getBytes()); // Algorithm dencodage
+    String jwtAccessToken = JWT.create()
+      .withSubject(user.getUsername()) // userName
+      .withExpiresAt(new Date(System.currentTimeMillis()+60*60*1000)) // delais token 10s
+      .withIssuer(request.getRequestURL().toString()) // le nom de l'app qui a genérer le Token
+      .withClaim("roles",user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList())) // convertir la liste des Rôles en string
+      .sign(algo1);
 
-        Map<String, String> idToken = new HashMap<>();
-        idToken.put("access_token", jwtAccessToken);
-        // Envoie le JWT au client en format JSON
-        response.setContentType(APPLICATION_JSON_VALUE); // Dire qu'il sagit de format JSON
-        new ObjectMapper().writeValue(response.getOutputStream(), idToken);
-    }
+    Map<String, String> idToken = new HashMap<>();
+    idToken.put("access_token", jwtAccessToken);
+    // Envoie le JWT au client en format JSON
+    response.setContentType(APPLICATION_JSON_VALUE); // Dire qu'il sagit de format JSON
+    new ObjectMapper().writeValue(response.getOutputStream(), idToken);
+  }
 }

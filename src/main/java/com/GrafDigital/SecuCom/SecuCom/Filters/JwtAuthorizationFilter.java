@@ -29,51 +29,51 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 // Cette classe va étendre de la classe OncePerRequestFilter;
 @Slf4j
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
-    // on implement la méthode
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+  // on implement la méthode
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        if(request.getServletPath().equals("/SecuCom/login")){
-             filterChain.doFilter(request, response);
-        }else {
-            String authorizationHeader;
-            authorizationHeader = request.getHeader(AUTHORIZATION);
-            // vérifions si le Header n'est pas null
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
-                try {
-                    String token = authorizationHeader.substring("Bearer ".length()); // Pour ignorer le Bearer nombre de caractère
-                    Algorithm algo1 = Algorithm.HMAC256("myScret2121".getBytes()); // le même secret pour la signature
-                    JWTVerifier verifier = JWT.require(algo1).build();
-                    DecodedJWT decodedJWT  = verifier.verify(token); // Vérifier l'algorithm qui  créer le Token
-                    String userName = decodedJWT.getSubject(); // Pour recupérer le userName
-                    String[] roles = decodedJWT.getClaim("roles").asArray(String.class); // Pour recupérer les roles
-                    Collection<SimpleGrantedAuthority> authorities = new ArrayList<>(); // Convertie les roles en liste de string
-                    stream(roles).forEach(role->{
-                        authorities.add(new SimpleGrantedAuthority(role));
-                    });
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(userName, null, authorities);
-                    // Maintenant on authentifie le user s'il a le droit
-                    SecurityContextHolder.getContext() .setAuthentication(authenticationToken );
-                    // On le laisse passer maintent
-                    filterChain.doFilter(request, response );
-                } catch (Exception exception ){
-                    log.error("Error logging in: {}", exception.getMessage());
-                    response.setHeader("error", exception.getMessage());
-                    response.setStatus(FORBIDDEN.value());
-                    // response.sendError(FORBIDDEN.value());
-                    Map<String, String> error = new HashMap<>();
-                    error.put("error_message", exception.getMessage() );
-                    // Envoie le JWT au client en format JSON
-                    response.setContentType(APPLICATION_JSON_VALUE); // Dire qu'il sagit de format JSON
-                    new ObjectMapper().writeValue(response.getOutputStream(), error);
-                }
-            }
-            else{
-                filterChain.doFilter(request, response );
-            }
+    if(request.getServletPath().equals("/SecuCom/login")){
+      filterChain.doFilter(request, response);
+    }else {
+      String authorizationHeader;
+      authorizationHeader = request.getHeader(AUTHORIZATION);
+      // vérifions si le Header n'est pas null
+      if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+        try {
+          String token = authorizationHeader.substring("Bearer ".length()); // Pour ignorer le Bearer nombre de caractère
+          Algorithm algo1 = Algorithm.HMAC256("myScret2121".getBytes()); // le même secret pour la signature
+          JWTVerifier verifier = JWT.require(algo1).build();
+          DecodedJWT decodedJWT  = verifier.verify(token); // Vérifier l'algorithm qui  créer le Token
+          String userName = decodedJWT.getSubject(); // Pour recupérer le userName
+          String[] roles = decodedJWT.getClaim("roles").asArray(String.class); // Pour recupérer les roles
+          Collection<SimpleGrantedAuthority> authorities = new ArrayList<>(); // Convertie les roles en liste de string
+          stream(roles).forEach(role->{
+            authorities.add(new SimpleGrantedAuthority(role));
+          });
+          UsernamePasswordAuthenticationToken authenticationToken =
+            new UsernamePasswordAuthenticationToken(userName, null, authorities);
+          // Maintenant on authentifie le user s'il a le droit
+          SecurityContextHolder.getContext() .setAuthentication(authenticationToken );
+          // On le laisse passer maintent
+          filterChain.doFilter(request, response );
+        } catch (Exception exception ){
+          log.error("Error logging in: {}", exception.getMessage());
+          response.setHeader("error", exception.getMessage());
+          response.setStatus(FORBIDDEN.value());
+          // response.sendError(FORBIDDEN.value());
+          Map<String, String> error = new HashMap<>();
+          error.put("error_message", exception.getMessage() );
+          // Envoie le JWT au client en format JSON
+          response.setContentType(APPLICATION_JSON_VALUE); // Dire qu'il sagit de format JSON
+          new ObjectMapper().writeValue(response.getOutputStream(), error);
         }
-
+      }
+      else{
+        filterChain.doFilter(request, response );
+      }
     }
+
+  }
 
 }
